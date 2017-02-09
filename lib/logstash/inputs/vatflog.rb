@@ -31,25 +31,31 @@ class LogStash::Inputs::Vatflog < LogStash::Inputs::Base
   end # def register
 
   def run(queue)
-    # we can abort the loop if stop? becomes true
-    while !stop?
-      date = Time.now.strftime("%m_%d_%Y")
-      sessions = Dir.glob("#{@baselogdir}/#{@farm}/#{@farm}#{date}*/session.html").select{|f| (Time.now - File.mtime(f)) <= @interval }
-      sessions.each {|session_log|
-        iter_log =  Dir.glob("#{File.dirname(session_log)}/**/iterZummary.html")[0]
-        dut_log = Dir.glob("#{File.dirname(session_log)}/**/dut1*")[0]
-        platform_log = `cat #{session_log} | grep Platform`
-        message = "#{FIle.read(dut_log)} =@=@=@ Start of vatf log =@=@=@\n #{File.read(iter_log)} =@=@=@ Start of session log =@=@=@\n #{File.read(platform_log)}"
-        event = LogStash::Event.new("message" => message, "host" => @host)
-        decorate(event)
-        queue << event
-      }
-      # because the sleep interval can be big, when shutdown happens
-      # we want to be able to abort the sleep
-      # Stud.stoppable_sleep will frequently evaluate the given block
-      # and abort the sleep(@interval) if the return value is true
-      Stud.stoppable_sleep(@interval) { stop? }
-    end # loop
+    begin
+      while !stop?
+        date = Time.now.strftime("%m_%d_%Y")
+        sessions = Dir.glob("#{@baselogdir}/#{@farm}/*/#{@farm}#{date}*/session.html").select{|f| (Time.now - File.mtime(f)) <= @interval }
+        puts "#{sessions.size} new sessions detected"
+        sessions.each {|session_log|
+          iter_log =  Dir.glob("#{File.dirname(session_log)}/**/iterZummary.html")[0]
+          dut_log = Dir.glob("#{File.dirname(session_log)}/**/dut1*")[0]
+          platform_log = `cat #{session_log} | grep Platform`
+          message = "#{File.read(dut_log)} =@=@=@ Start of vatf log =@=@=@\n #{File.read(iter_log)} =@=@=@ Start of session log =@=@=@\n #{platform_log}"
+          event = LogStash::Event.new("message" => message, "host" => @host)
+          decorate(event)
+          queue << event
+        }
+        # because the sleep interval can be big, when shutdown happens
+        # we want to be able to abort the sleep
+        # Stud.stoppable_sleep will frequently evaluate the given block
+        # and abort the sleep(@interval) if the return value is true
+        Stud.stoppable_sleep(@interval) { stop? }
+      end # loop
+    rescue Exception => e
+      puts e.to_s
+      puts e.backtrace
+      raise
+    end
   end # def run
 
   def stop
