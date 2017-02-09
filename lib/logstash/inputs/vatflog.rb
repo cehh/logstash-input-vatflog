@@ -40,7 +40,7 @@ class LogStash::Inputs::Vatflog < LogStash::Inputs::Base
           iter_log =  Dir.glob("#{File.dirname(session_log)}/**/iterZummary.html")[0]
           dut_log = Dir.glob("#{File.dirname(session_log)}/**/dut1*")[0]
           platform_log = `cat #{session_log} | grep Platform`
-          message = "#{File.read(dut_log)} =@=@=@ Start of vatf log =@=@=@\n #{File.read(iter_log)} =@=@=@ Start of session log =@=@=@\n #{platform_log}"
+          message = "#{File.read(dut_log)} =@=@=@ Start of vatf log =@=@=@\n #{File.read(iter_log)} =@=@=@ dut_log=#{dut_log} =@=@=@ Start of session log =@=@=@\n #{platform_log}"
           event = LogStash::Event.new("message" => message, "host" => @host)
           decorate(event)
           queue << event
