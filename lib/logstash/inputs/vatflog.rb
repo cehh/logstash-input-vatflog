@@ -34,7 +34,7 @@ class LogStash::Inputs::Vatflog < LogStash::Inputs::Base
     begin
       while !stop?
         date = Time.now.strftime("%m_%d_%Y")
-        sessions = Dir.glob("#{@baselogdir}/#{@farm}/*/#{@farm}#{date}*/session.html").select{|f| (Time.now - File.mtime(f)) <= @interval }
+        sessions = Dir.glob("#{@baselogdir}/#{@farm}/*/*/#{@farm}#{date}*/session.html").select{|f| (Time.now - File.mtime(f)) <= @interval }
         puts "#{sessions.size} new sessions detected"
         sessions.each {|session_log|
           iter_log =  Dir.glob("#{File.dirname(session_log)}/**/iterZummary.html")[0]

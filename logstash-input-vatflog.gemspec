@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'logstash-input-vatflog'
-  s.version       = '0.1.0'
+  s.version       = '0.1.1'
   s.licenses      = ['Apache-2.0']
   s.summary       = 'Logstash input filter to generate vatf logs events'
   s.homepage      = 'https://github.com/cehh/logstash-input-vatflog'
