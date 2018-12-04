@@ -33,8 +33,9 @@ class LogStash::Inputs::Vatflog < LogStash::Inputs::Base
   def run(queue)
     begin
       while !stop?
-        date = Time.now.strftime("%m_%d_%Y")
-        sessions = Dir.glob("#{@baselogdir}/#{@farm}/*/*/#{@farm}#{date}*/session.html").select{|f| (Time.now - File.mtime(f)) <= @interval }
+        date_object = Time.now() 
+        date = date_object.strftime("%m_%d_%Y")
+        sessions = Dir.glob("#{@baselogdir}/#{@farm}/*/#{date_object.strftime("%m_%Y")}/#{@farm}#{date}*/session.html").select{|f| (Time.now - File.mtime(f)) <= @interval }
         puts "#{sessions.size} new sessions detected"
         sessions.each {|session_log|
           iter_log =  Dir.glob("#{File.dirname(session_log)}/**/iterZummary.html")[0]
